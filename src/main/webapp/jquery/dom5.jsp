@@ -19,12 +19,12 @@
          <table class="table" id="table-cart-items">
             <thead>
                <tr>
-                  <th><input type="checkbox" id="checkbox-toggle-checked" checked/></th>
-                  <th>상품명</th>
-                  <th>가격</th>
-                  <th>수량</th>
-                  <th>구매가격</th>
-                  <th></th>
+                  <th style="width: 5%;"><input type="checkbox" id="checkbox-toggle-checked" checked/></th>
+                  <th style="width: 40%;">상품명</th>
+                  <th style="width: 15%;">가격</th>
+                  <th style="width: 15%;">수량</th>
+                  <th style="width: 15%;">구매가격</th>
+                  <th style="width: 10%;"></th>
                </tr>
             </thead>
             <tbody>
@@ -32,24 +32,24 @@
                   <td><input type="checkbox" name="itemNo" value="10" checked/></td>
                   <td>iphone 13 pro max</td>
                   <td><strong id="price-10">1,500,000</strong> 원</td>
-                  <td><input type="text" name="amount" id="amount-10" value="1" style="width: 50px;"/> <button data-item-no="10" data-btn="update">변경</button></td>
+                  <td><input type="number" name="amount" id="amount-10" value="1" style="width: 50px;"/> <button data-item-no="10" data-btn="update">변경</button></td>
                   <td><strong class="text-danger" id="order-price-10" data-order-price="1500000">1,500,000</strong> 원</td>
                   <td><button data-item-no="10" data-btn="delete">삭제</button></td> <%-- data-item-no="10" 혹은 적절한 id로 관계 맺어주기--%>
                </tr>
                <tr>
                   <td><input type="checkbox" name="itemNo" value="20" checked/></td>
                   <td>갤럭시z 플립 3</td>
-                  <td><strong>1,700,000</strong> 원</td>
-                  <td><input type="text" name="amount" id="amount-20"  value="1" style="width: 50px;"/> <button data-item-no="20" data-btn="update">변경</button></td>
-                  <td><strong class="text-danger" data-order-price="1700000">1,700,000</strong> 원</td>
+                  <td><strong id="price-20" >1,700,000</strong> 원</td>
+                  <td><input type="number" name="amount" id="amount-20"  value="1" style="width: 50px;"/> <button data-item-no="20" data-btn="update">변경</button></td>
+                  <td><strong class="text-danger"  id="order-price-20" data-order-price="1700000">1,700,000</strong> 원</td>
                   <td><button  data-item-no="20" data-btn="delete">삭제</button></td>
                </tr>
                <tr>
                   <td><input type="checkbox" name="itemNo" value="30" checked/></td>
                   <td>apple watch 7</td>
-                  <td><strong>600,000</strong> 원</td>
-                  <td><input type="text" name="amount" id="amount-30"  value="1" style="width: 50px;"/> <button data-item-no="30" data-btn="update">변경</button></td>
-                  <td><strong class="text-danger" data-order-price="600000">600,000</strong> 원</td>
+                  <td><strong id="price-30">600,000</strong> 원</td>
+                  <td><input type="number" name="amount" id="amount-30"  value="1" style="width: 50px;"/> <button data-item-no="30" data-btn="update">변경</button></td>
+                  <td><strong class="text-danger" id="order-price-30"  data-order-price="600000">600,000</strong> 원</td>
                   <td><button data-item-no="30" data-btn="delete">삭제</button></td>
                </tr>
             </tbody>
@@ -76,11 +76,54 @@
 			var orderPrice = parseInt($(this).data('order-price'));
 			totalOrderPrice += orderPrice;
 		})
-		$("#total-order-price").text(totalOrderPrice);
+		$("#total-order-price").text(totalOrderPrice.toLocaleString());
 		
-		// 구매 수량을 변경하면 구매가격을 계산해서 반영하기.
+		
+//	연습	var orderPrice = 0;
+//			var Price = parseInt($(this).data('price'))
+//			var amount = 
+
+		// 구매 수량을 변경하고 변경버튼을 클릭시 구매가격을 계산해서 반영하기.
+		$("button[data-btn='update']").click(function(){
+			// data-item-no로 관계맺어주기.
+			var itemNo = $(this).data('item-no');       				// <button data-item-no="숫자" data-btn="update">
+			// 가격조회
+			var price = parseInt($("#price-"+itemNo).text().replace(/,/g, ''));	//<strong id="price-10">1,500,000</strong>
+			// 구매수량 조회
+			var amount = parseInt($("#amount-"+itemNo).val());
+			// 구매가격 계산
+			var orderPrice = price*amount
+			
+			//구매가격 표시하기
+			$("#order-price-"+itemNo).attr("data-order-price",orderPrice).text(orderPrice.toLocaleString())
+		})
+		
+		// 삭제버튼을 클릭 시 해당 아이템을 삭제하기
+		$("button[data-btn='delete']").click(function(){
+			$(this).closest("tr").remove();				// 이 jquery집합객체에 가장 가까운 tr을 찾아 삭제.
+		})
+		
+		// 전체 선택/해제 체크박스를 변경하면 장바구니 아이템의 체크박스가 선택/해제되게 하기
+		$("#checkbox-toggle-checked").change(function(){		// checkbox상태가 바뀔때마다
+			$(":checkbox[name='itemNo']").prop('checked',$(this).prop('checked'));
+		})	
+		
+		// 장바구니 아이템의 체크박스를 변경하면 전체 선택/해제 체크박스가 선택/해제되게 하기
+		$(":checkbox[name='itemNo']").change(function(){
+			// 장바구니 아이템 체크박스의 전체 갯수를 조회한다.
+			var length = $(":checkbox[name='itemNo']").length
+			// 장바구니 아이템 체크박스 중에서 체크된 갯수를 조회한다.
+			var checkedLength = $(":checkbox[name='itemNo']:checked").length;
+			// 장바구니 아이템 체크박스의 전체 개수와 체크된 개수가 일치하면 전체 선택/해제 체크박스의 체크여부를 true로 그 외는 false로 
+			$("#checkbox-toggle-checked").prop('checked',length == checkedLength);
+			
+			updateTotalOrderPrice();
+		})
 		
 		// 총 구매가격을 갱신하는 함수
+		function updateTotalOrderPrice(){
+	
+		}
 		// 
 		
 </script>
